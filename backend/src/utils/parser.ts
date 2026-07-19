@@ -1,7 +1,6 @@
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Tesseract from 'tesseract.js';
-import { createCanvas } from '@napi-rs/canvas';
 
 let pdfjsLib: any = null;
 try {
@@ -41,6 +40,13 @@ export const parseResume = async (buffer: Buffer, mimeType: string): Promise<str
 
         let ocrText = '';
         const worker = await Tesseract.createWorker('eng');
+
+        let createCanvas: any = null;
+        try {
+          createCanvas = require('@napi-rs/canvas').createCanvas;
+        } catch (canvasErr) {
+          throw new Error('OCR fallback failed: Scanned PDFs require native canvas dependencies which are not supported in this server environment. Please upload a standard text-based (digital) PDF.');
+        }
 
         for (let i = 1; i <= pdfDocument.numPages; i++) {
           console.log(`📸 Rendering page ${i}/${pdfDocument.numPages} to canvas...`);
